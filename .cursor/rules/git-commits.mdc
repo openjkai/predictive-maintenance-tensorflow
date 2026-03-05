@@ -1,0 +1,39 @@
+---
+description: Git commit message format for Conventional Commits
+alwaysApply: true
+---
+
+# Git Commit Messages
+
+When generating or suggesting git commit messages (including Cursor's "Generate Commit Message" ✨), always use **Conventional Commits**:
+
+## Format
+
+```
+<type>(<scope>): <short description>
+```
+
+## Types
+
+- `feat` — new feature
+- `fix` — bug fix
+- `docs` — documentation only
+- `style` — formatting, no logic change
+- `refactor` — code change, no fix/feature
+- `test` — tests
+- `chore` — build, deps, tooling
+
+## Scope (optional)
+
+Module or area: `load_data`, `feature_engineering`, `train`, etc.
+
+## Examples
+
+```
+feat(load_data): add FE and BA channel support
+fix(load_data): handle missing RPM in older .mat files
+docs: add dataset download instructions
+chore: add pre-commit config
+```
+
+Keep the subject line under 50 characters. Use imperative mood ("add" not "added").

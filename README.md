@@ -26,8 +26,12 @@ predictive-maintenance-tensorflow/
 ├── notebooks/      # Exploration & analysis
 ├── src/            # Preprocessing, features, training, prediction
 ├── models/         # Saved models
+├── scripts/        # Download, setup utilities
 ├── PLAN.md         # Step-by-step implementation plan
-├── README.md
+├── CONTRIBUTING.md # Commit convention, code style
+├── .cursor/rules/  # Cursor rules (e.g. Conventional Commits for ✨ Generate Message)
+├── pyproject.toml  # Project config, Black, Ruff, Commitizen
+├── .editorconfig   # Editor consistency
 └── requirements.txt
 ```
 
@@ -38,6 +42,16 @@ predictive-maintenance-tensorflow/
 1. Read [PLAN.md](PLAN.md) to see the phases.
 2. Start with **Phase 1** (setup & data access).
 3. Run step by step as we add code.
+
+### Dev setup (optional)
+
+```bash
+pip install -e ".[dev]"
+pre-commit install
+pre-commit install --hook-type commit-msg   # Validate commit messages
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for commit convention and code style.
 
 ---
 

@@ -1,0 +1,12 @@
+# Conventional Commits — https://www.conventionalcommits.org
+#
+# Format: <type>(<scope>): <description>
+#
+# Types: feat, fix, docs, style, refactor, test, chore
+#
+# Example: feat(load_data): add DE channel extraction
+#
+# <body> (optional)
+# <footer> (optional)
+#
+# ---

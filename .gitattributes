@@ -1,0 +1,9 @@
+# Git attributes — line endings, diffs
+# Ensures consistent line endings (LF) on all platforms
+
+* text=auto eol=lf
+*.mat binary
+*.h5 binary
+*.keras binary
+*.png binary
+*.jpg binary

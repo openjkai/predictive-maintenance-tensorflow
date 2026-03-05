@@ -1,0 +1,1 @@
+When generating git commit messages (including the "Generate Commit Message" sparkle icon), always use Conventional Commits: type(scope): description. Types: feat, fix, docs, style, refactor, test, chore. Example: feat(load_data): add channel support.
