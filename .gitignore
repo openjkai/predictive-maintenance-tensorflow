@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+venv/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (optional: ignore large files if needed)
+# *.mat
+
+# Models (optional: ignore if large)
+# models/*.h5
+# models/*.keras
