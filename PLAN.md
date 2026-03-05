@@ -107,10 +107,12 @@
 
 ## Current Status
 
-- [x] Phase 1.3 — CWRU data downloaded
+- [x] Phase 1.3 — CWRU data downloaded (extended set: 12 files)
 - [x] Phase 1.4 — load_data.py created
-- [ ] Phase 1
-- [ ] Phase 2
+- [x] Phase 1.5 — verify_data.py: plot segment, sanity check
+- [x] Phase 1 complete
+- [x] Phase 2.1–2.4 — exploration.ipynb (labels, plots, FFT, windowing)
+- [ ] Phase 2 complete
 - [ ] Phase 3
 - [ ] Phase 4
 - [ ] Phase 5 (optional)
@@ -120,6 +122,4 @@
 
 ## Next Step
 
-**Start with Phase 1, Step 1.1:** Create folder structure.
-
-After that, we'll do 1.2 (requirements), then 1.3 (data download), etc. — one step at a time.
+**Phase 3.1:** Implement feature engineering — RMS, peak, mean per window.

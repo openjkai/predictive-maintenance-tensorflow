@@ -12,17 +12,28 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-# Minimal starter set: Normal + 3 fault types (0.007" @ 0 HP, 1797 RPM)
-# Enough for binary (normal vs fault) and later multi-class
+# Extended set: more data for better model accuracy (Tier 2)
+# - Normal at all loads (0-3 HP)
+# - 3 fault types at 0.007", 0.014", 0.021" @ 0 HP
+# Source: https://engineering.case.edu/bearingdatacenter/12k-drive-end-bearing-fault-data
 FILES = {
-    # Normal baseline
+    # Normal baseline — all loads
     "Normal_0.mat": "97",
-    # Inner race fault
+    "Normal_1.mat": "98",
+    "Normal_2.mat": "99",
+    "Normal_3.mat": "100",
+    # 0.007" faults @ 0 HP
     "IR007_0.mat": "105",
-    # Ball fault
     "B007_0.mat": "118",
-    # Outer race fault (centered @ 6:00)
     "OR007@6_0.mat": "130",
+    # 0.014" faults @ 0 HP (larger = more severe)
+    "IR014_0.mat": "169",
+    "B014_0.mat": "185",
+    "OR014@6_0.mat": "197",
+    # 0.021" faults @ 0 HP
+    "IR021_0.mat": "209",
+    "B021_0.mat": "222",
+    "OR021@6_0.mat": "234",
 }
 
 BASE_URL = "https://engineering.case.edu/sites/default/files/{}.mat"
@@ -55,7 +66,7 @@ def main():
             success += 1
     print(f"\nDone: {success}/{len(FILES)} files")
     if success == len(FILES):
-        print("Ready for Phase 1, Step 1.4 (load_data.py)")
+        print("Ready for Phase 1.5 — run: python scripts/verify_data.py")
     else:
         print("Some downloads failed. Check URLs or try manual download from:")
         print("  https://engineering.case.edu/bearingdatacenter/download-data-file")

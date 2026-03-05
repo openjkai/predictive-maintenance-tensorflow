@@ -39,6 +39,31 @@ predictive-maintenance-tensorflow/
 
 ## Getting Started
 
+### 1. Create virtual environment and install
+
+```bash
+cd /path/to/ml
+python3 -m venv venv
+source venv/bin/activate   # Linux/macOS — or `venv\Scripts\activate` on Windows
+pip install -r requirements.txt
+```
+
+### 2. Run scripts
+
+```bash
+# Activate venv first (if not already)
+source venv/bin/activate
+
+python scripts/download_cwru.py
+python scripts/verify_data.py
+jupyter notebook notebooks/exploration.ipynb
+
+# Or without activating — use venv Python directly:
+./venv/bin/jupyter notebook notebooks/exploration.ipynb
+```
+
+### 3. Follow the plan
+
 1. Read [PLAN.md](PLAN.md) to see the phases.
 2. Start with **Phase 1** (setup & data access).
 3. Run step by step as we add code.
@@ -46,6 +71,7 @@ predictive-maintenance-tensorflow/
 ### Dev setup (optional)
 
 ```bash
+source venv/bin/activate
 pip install -e ".[dev]"
 pre-commit install
 pre-commit install --hook-type commit-msg   # Validate commit messages
