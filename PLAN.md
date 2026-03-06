@@ -112,8 +112,9 @@
 - [x] Phase 1.5 — verify_data.py: plot segment, sanity check
 - [x] Phase 1 complete
 - [x] Phase 2.1–2.4 — exploration.ipynb (labels, plots, FFT, windowing)
-- [ ] Phase 2 complete
-- [ ] Phase 3
+- [x] Phase 2 complete
+- [x] Phase 3.1–3.4 — feature_engineering.py (RMS, peak, mean, std, kurtosis; build_dataset; train_val_split)
+- [ ] Phase 3 complete
 - [ ] Phase 4
 - [ ] Phase 5 (optional)
 - [ ] Phase 6
