@@ -114,8 +114,8 @@
 - [x] Phase 2.1–2.4 — exploration.ipynb (labels, plots, FFT, windowing)
 - [x] Phase 2 complete
 - [x] Phase 3.1–3.4 — feature_engineering.py (RMS, peak, mean, std, kurtosis; build_dataset; train_val_split)
-- [ ] Phase 3 complete
-- [ ] Phase 4
+- [x] Phase 3 complete
+- [x] Phase 4 — train_model.py, predict.py, scripts/train.py (Dense classifier, ~98% val accuracy)
 - [ ] Phase 5 (optional)
 - [ ] Phase 6
 
@@ -123,4 +123,4 @@
 
 ## Next Step
 
-**Phase 3.1:** Implement feature engineering — RMS, peak, mean per window.
+**Phase 5 (optional):** Multi-class improvements, or **Phase 6:** Polish & GitHub-ready.

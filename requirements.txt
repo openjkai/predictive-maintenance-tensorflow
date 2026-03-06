@@ -7,5 +7,4 @@ scipy>=1.10
 matplotlib>=3.7
 jupyter>=1.0
 
-# TensorFlow (add when we reach Phase 4)
-# tensorflow>=2.14
+tensorflow>=2.14
