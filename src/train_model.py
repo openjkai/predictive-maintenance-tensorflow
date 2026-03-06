@@ -96,6 +96,16 @@ def train(
     val_loss, val_acc = model.evaluate(X_val, y_val, verbose=0)
     y_pred = np.argmax(model.predict(X_val, verbose=0), axis=1)
 
+    # Confusion matrix (Phase 6.4)
+    n = len(class_names)
+    cm = np.zeros((n, n), dtype=int)
+    for true_idx, pred_idx in zip(y_val, y_pred):
+        cm[true_idx, pred_idx] += 1
+    print("\nConfusion matrix (rows=true, cols=pred):")
+    print("       ", " ".join(f"{c[:4]:>5}" for c in class_names))
+    for i, name in enumerate(class_names):
+        print(f"{name[:6]:>6}", " ".join(f"{cm[i, j]:>5}" for j in range(n)))
+
     # Save model + metadata for predict.py
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     model_path = Path(model_path)

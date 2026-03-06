@@ -48,25 +48,59 @@ source venv/bin/activate   # Linux/macOS — or `venv\Scripts\activate` on Windo
 pip install -r requirements.txt
 ```
 
-### 2. Run scripts
+### 2. Full pipeline
 
 ```bash
-# Activate venv first (if not already)
 source venv/bin/activate
 
+# 1. Download data
 python scripts/download_cwru.py
-python scripts/verify_data.py
-jupyter notebook notebooks/exploration.ipynb
 
-# Or without activating — use venv Python directly:
-./venv/bin/jupyter notebook notebooks/exploration.ipynb
+# 2. Verify data (optional)
+python scripts/verify_data.py
+
+# 3. Train model
+python scripts/train.py
+
+# 4. Demo: health score + recommendation
+python scripts/demo.py
+
+# 5. Explore in Jupyter
+jupyter notebook notebooks/exploration.ipynb
 ```
 
-### 3. Follow the plan
+Or use venv Python directly: `./venv/bin/python scripts/train.py`
 
-1. Read [PLAN.md](PLAN.md) to see the phases.
-2. Start with **Phase 1** (setup & data access).
-3. Run step by step as we add code.
+### 3. Quick demo (after training)
+
+```bash
+python scripts/demo.py
+```
+
+Example output:
+```
+Machine ID: sample_001
+Predicted: normal
+Health score: 98%
+Recommendation: No maintenance required
+```
+
+---
+
+## Results
+
+| Metric | Value |
+|--------|-------|
+| Val accuracy | ~98% |
+| Classes | normal, inner_race, ball, outer_race |
+| Features | RMS, peak, mean, std, kurtosis |
+
+---
+
+## Follow the plan
+
+1. Read [PLAN.md](PLAN.md) for the full roadmap.
+2. Phases 1–4 are complete; Phase 6 polish in progress.
 
 ### Dev setup (optional)
 

@@ -117,10 +117,10 @@
 - [x] Phase 3 complete
 - [x] Phase 4 — train_model.py, predict.py, scripts/train.py (Dense classifier, ~98% val accuracy)
 - [ ] Phase 5 (optional)
-- [ ] Phase 6
+- [x] Phase 6.1–6.4 — README, train CLI args, demo.py (health score, recommendation), confusion matrix
 
 ---
 
 ## Next Step
 
-**Phase 5 (optional):** Multi-class improvements, or **Phase 6:** Polish & GitHub-ready.
+**Phase 5 (optional):** Multi-class improvements. Project is GitHub-ready.
