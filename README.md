@@ -123,6 +123,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit convention and code style.
 
 ---
 
+## Future Improvements
+
+- **LSTM / 1D CNN** — Use raw vibration windows instead of hand-crafted features
+- **More features** — FFT-based (spectral centroid, bandwidth), wavelet features
+- **NASA C-MAPSS** — Add RUL (Remaining Useful Life) prediction
+- **Class weights** — Handle imbalanced fault severities
+- **Web dashboard** — Simple UI for health monitoring demo
+
+---
+
 ## License
 
-MIT — dataset usage follows CWRU terms.
+MIT — see [LICENSE](LICENSE). Dataset usage follows CWRU terms.

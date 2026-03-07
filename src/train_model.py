@@ -19,6 +19,35 @@ MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 DEFAULT_MODEL_PATH = MODELS_DIR / "fault_classifier.keras"
 
 
+def _plot_training_curves(history: dict, out_path: Path) -> None:
+    """Save loss and accuracy curves to file."""
+    import matplotlib.pyplot as plt
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
+    epochs_range = range(1, len(history["loss"]) + 1)
+
+    ax1.plot(epochs_range, history["loss"], label="train")
+    ax1.plot(epochs_range, history["val_loss"], label="val")
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Loss")
+    ax1.set_title("Training loss")
+    ax1.legend()
+    ax1.grid(True, alpha=0.3)
+
+    ax2.plot(epochs_range, history["accuracy"], label="train")
+    ax2.plot(epochs_range, history["val_accuracy"], label="val")
+    ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("Accuracy")
+    ax2.set_title("Training accuracy")
+    ax2.legend()
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=120)
+    plt.close()
+    print(f"Training curves saved: {out_path}")
+
+
 def build_model(n_classes: int, input_dim: int = 5) -> "keras.Model":
     """Build simple Dense classifier (Phase 4.1)."""
     from tensorflow import keras
@@ -105,6 +134,22 @@ def train(
     print("       ", " ".join(f"{c[:4]:>5}" for c in class_names))
     for i, name in enumerate(class_names):
         print(f"{name[:6]:>6}", " ".join(f"{cm[i, j]:>5}" for j in range(n)))
+
+    # Per-class recall and precision (Phase 5)
+    recall = np.zeros(n)
+    precision = np.zeros(n)
+    for i in range(n):
+        tp = cm[i, i]
+        recall[i] = tp / cm[i, :].sum() if cm[i, :].sum() > 0 else 0
+        precision[i] = tp / cm[:, i].sum() if cm[:, i].sum() > 0 else 0
+    print("\nPer-class metrics:")
+    for i, name in enumerate(class_names):
+        print(f"  {name:12} recall={recall[i]:.2%}  precision={precision[i]:.2%}")
+
+    # Save training curves (Phase 6.4)
+    figs_dir = Path(__file__).resolve().parents[1] / "notebooks"
+    figs_dir.mkdir(parents=True, exist_ok=True)
+    _plot_training_curves(history.history, figs_dir / "training_curves.png")
 
     # Save model + metadata for predict.py
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
