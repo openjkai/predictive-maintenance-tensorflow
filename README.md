@@ -74,7 +74,15 @@ Or use venv Python directly: `./venv/bin/python scripts/train.py`
 ### 3. Quick demo (after training)
 
 ```bash
+# Default: predict from a sample in the dataset
 python scripts/demo.py
+
+# Predict from a specific .mat file
+python scripts/demo.py data/IR007_0.mat
+
+# Or use run_predict for raw prediction output
+python scripts/run_predict.py
+python scripts/run_predict.py data/Normal_0.mat
 ```
 
 Example output:

@@ -82,6 +82,54 @@ def predict_single(
     }
 
 
+def predict_from_file(
+    mat_path: Path | str,
+    model_path: Path | str = DEFAULT_MODEL_PATH,
+    n_windows: int = 10,
+) -> dict:
+    """
+    Predict fault from a .mat file. Extracts features from first n_windows,
+    predicts each, returns majority vote + mean confidence.
+
+    Args:
+        mat_path: Path to CWRU .mat file
+        model_path: Path to trained model
+        n_windows: Number of windows to sample (default 10)
+
+    Returns:
+        dict with predicted_class, probability, all_probs, class_names
+    """
+    from src.feature_engineering import extract_features, sliding_windows
+    from src.load_data import load_mat_file
+
+    signal, _rate, _rpm = load_mat_file(mat_path)
+    windows = sliding_windows(signal)[:n_windows]
+    if not windows:
+        raise ValueError(f"Signal too short for windows: {len(signal)} samples")
+
+    X = np.array([extract_features(w) for w in windows], dtype=np.float64)
+    pred_classes, class_names = predict(X, model_path)
+
+    # Majority vote
+    from collections import Counter
+
+    majority = Counter(pred_classes).most_common(1)[0][0]
+    prob = (pred_classes == majority).mean()
+
+    model, mean, std, _ = load_model_and_meta(model_path)
+    X_norm = (X - mean) / std
+    probs = model.predict(X_norm, verbose=0)
+    mean_probs = probs.mean(axis=0)
+
+    return {
+        "predicted_class": class_names[majority],
+        "probability": float(mean_probs[majority]),
+        "all_probs": dict(zip(class_names, map(float, mean_probs))),
+        "class_names": class_names,
+        "n_windows": len(windows),
+    }
+
+
 if __name__ == "__main__":
     import sys
 
