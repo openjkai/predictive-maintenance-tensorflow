@@ -130,6 +130,67 @@ def predict_from_file(
     }
 
 
+RAW_MODEL_PATH = MODELS_DIR / "fault_classifier_raw.keras"
+
+
+def load_raw_model_and_meta(model_path: Path | str = RAW_MODEL_PATH):
+    """Load raw-signal model (1D-CNN/LSTM) and metadata."""
+    from tensorflow import keras
+
+    model_path = Path(model_path)
+    meta_path = model_path.with_suffix(".npz")
+
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"Raw model not found: {model_path}. Run: python scripts/train_raw.py"
+        )
+
+    model = keras.models.load_model(model_path)
+    meta = np.load(meta_path, allow_pickle=True)
+    mean = meta["mean"]
+    std = meta["std"]
+    class_names = list(meta["class_names"])
+    window_size = int(meta.get("window_size", 1024))
+
+    return model, mean, std, class_names, window_size
+
+
+def predict_from_file_raw(
+    mat_path: Path | str,
+    model_path: Path | str = RAW_MODEL_PATH,
+    n_windows: int = 10,
+) -> dict:
+    """
+    Predict from .mat file using raw-signal model (1D-CNN/LSTM).
+    Loads signal, creates windows, runs through raw model.
+    """
+    from src.feature_engineering import sliding_windows
+    from src.load_data import load_mat_file
+
+    mat_path = Path(mat_path)
+    signal, _rate, _rpm = load_mat_file(mat_path)
+
+    model, mean, std, class_names, window_size = load_raw_model_and_meta(model_path)
+    windows = sliding_windows(signal, window_size=window_size)[:n_windows]
+    if not windows:
+        raise ValueError(f"Signal too short: {len(signal)} samples, need {window_size}")
+
+    X = np.array(windows, dtype=np.float32)[..., np.newaxis]
+    X_norm = (X - mean) / np.where(std < 1e-8, 1.0, std)
+    probs = model.predict(X_norm, verbose=0)
+    mean_probs = probs.mean(axis=0)
+    pred_idx = int(np.argmax(mean_probs))
+
+    return {
+        "predicted_class": class_names[pred_idx],
+        "probability": float(mean_probs[pred_idx]),
+        "all_probs": dict(zip(class_names, map(float, mean_probs))),
+        "class_names": class_names,
+        "n_windows": len(windows),
+        "mat_path": str(mat_path),
+    }
+
+
 if __name__ == "__main__":
     import sys
 

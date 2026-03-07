@@ -111,6 +111,45 @@ def build_dataset(
     return X, y, feature_names
 
 
+def build_raw_dataset(
+    data_dir: Path | str = DATA_DIR,
+    window_size: int = WINDOW_SAMPLES,
+    step: int = STEP_SAMPLES,
+    binary: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Build dataset of raw vibration windows (for LSTM/1D-CNN).
+
+    Returns:
+        X: (n_samples, window_size, 1) — raw windows, channel dim for Conv1D
+        y: (n_samples,) integer labels
+    """
+    data = load_dataset(data_dir)
+
+    X_list = []
+    y_list = []
+
+    for name, (signal, _rate, _rpm) in sorted(data.items()):
+        label = get_label(name)
+        if label == "unknown":
+            continue
+
+        if binary:
+            y_val = 0 if label == "normal" else 1
+        else:
+            y_val = CLASS_NAMES.index(label)
+
+        for win in sliding_windows(signal, window_size, step):
+            X_list.append(win)
+            y_list.append(y_val)
+
+    X = np.array(X_list, dtype=np.float32)
+    # Add channel dim: (n, 1024) -> (n, 1024, 1) for Conv1D/LSTM
+    X = X[..., np.newaxis]
+    y = np.array(y_list, dtype=np.int64)
+    return X, y
+
+
 def train_val_split(
     X: np.ndarray,
     y: np.ndarray,
