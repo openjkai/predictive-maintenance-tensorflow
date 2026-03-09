@@ -69,7 +69,10 @@ python scripts/demo.py
 python scripts/train_raw.py --arch 1dcnn
 python scripts/demo_raw.py data/IR007_0.mat
 
-# 5. Explore in Jupyter
+# 5. Web dashboard (Phase 7.4)
+streamlit run scripts/dashboard.py
+
+# 6. Explore in Jupyter
 jupyter notebook notebooks/exploration.ipynb
 ```
 
@@ -91,6 +94,9 @@ python scripts/run_predict.py data/Normal_0.mat
 # Raw-signal model demo (after training with train_raw.py)
 python scripts/demo_raw.py
 python scripts/demo_raw.py data/IR007_0.mat
+
+# Web dashboard — upload .mat or pick from data/
+streamlit run scripts/dashboard.py
 ```
 
 Example output:
@@ -137,7 +143,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit convention and code style.
 - **More features** — Phase 7.1 done: spectral centroid, spectral bandwidth, wavelet energies (db4) — FFT-based (spectral centroid, bandwidth), wavelet features
 - **NASA C-MAPSS** — Add RUL (Remaining Useful Life) prediction
 - **Class weights** — Handle imbalanced fault severities
-- **Web dashboard** — Simple UI for health monitoring demo
+- **Web dashboard** — Phase 7.4 done: `streamlit run scripts/dashboard.py`
 
 ---
 

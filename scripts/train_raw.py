@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--val-frac", type=float, default=0.2)
+    parser.add_argument("--no-class-weights", action="store_true", help="Disable balanced class weights")
     parser.add_argument("--out", type=str, default=str(DEFAULT_MODEL), help="Output model path")
     args = parser.parse_args()
 
@@ -37,6 +38,7 @@ def main():
         batch_size=args.batch_size,
         val_frac=args.val_frac,
         model_path=Path(args.out),
+        use_class_weights=not args.no_class_weights,
     )
 
     print(f"\nVal accuracy: {result['val_accuracy']:.2%}")

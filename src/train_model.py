@@ -69,6 +69,17 @@ def build_model(n_classes: int, input_dim: int = 5) -> "keras.Model":
     return model
 
 
+def _compute_class_weights(y: np.ndarray, n_classes: int) -> dict[int, float]:
+    """Phase 7.3: Balanced class weights for imbalanced data."""
+    from sklearn.utils.class_weight import compute_class_weight
+
+    classes = np.arange(n_classes)
+    weights = compute_class_weight(
+        "balanced", classes=classes, y=y
+    )
+    return dict(zip(classes, weights))
+
+
 def train(
     data_dir: Path | str = DATA_DIR,
     binary: bool = False,
@@ -77,6 +88,7 @@ def train(
     val_frac: float = 0.2,
     random_state: int = 42,
     model_path: Path | str = DEFAULT_MODEL_PATH,
+    use_class_weights: bool = True,
 ) -> dict:
     """
     Build dataset, train model, evaluate, save.
@@ -104,6 +116,12 @@ def train(
     # Model
     model = build_model(n_classes=n_classes, input_dim=X.shape[1])
 
+    # Phase 7.3: Class weights for imbalanced fault severities
+    class_weight = None
+    if use_class_weights:
+        class_weight = _compute_class_weights(y_train, n_classes)
+        print(f"Class weights (balanced): {class_weight}")
+
     # Train
     history = model.fit(
         X_train,
@@ -111,6 +129,7 @@ def train(
         validation_data=(X_val, y_val),
         epochs=epochs,
         batch_size=batch_size,
+        class_weight=class_weight,
         callbacks=[
             keras.callbacks.EarlyStopping(
                 monitor="val_loss",

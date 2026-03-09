@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--batch-size", type=int, default=64, help="Batch size")
     parser.add_argument("--val-frac", type=float, default=0.2, help="Validation fraction")
     parser.add_argument("--binary", action="store_true", help="Binary (normal vs fault)")
+    parser.add_argument("--no-class-weights", action="store_true", help="Disable balanced class weights")
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL, help="Output model path")
     args = parser.parse_args()
 
@@ -36,6 +37,7 @@ def main():
         val_frac=args.val_frac,
         random_state=42,
         model_path=args.model,
+        use_class_weights=not args.no_class_weights,
     )
 
     print(f"\nVal accuracy: {result['val_accuracy']:.2%}")

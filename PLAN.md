@@ -128,11 +128,11 @@
 |---|-------------|------------|--------|
 | 7.1 | **More features** | FFT-based (spectral centroid, spectral bandwidth), wavelet features (db4) | Done |
 | 7.2 | **NASA C-MAPSS** | Add RUL (Remaining Useful Life) prediction | Pending |
-| 7.3 | **Class weights** | Handle imbalanced fault severities (loss weighting, oversampling) | Pending |
-| 7.4 | **Web dashboard** | Simple UI for health monitoring demo | Pending |
+| 7.3 | **Class weights** | Balanced loss weighting (sklearn) for feature + raw models | Done |
+| 7.4 | **Web dashboard** | Streamlit UI: upload .mat, pick model, health score | Done |
 
 ---
 
 ## Next Step
 
-Pick from Phase 7.2–7.4, or iterate on existing models.
+Phase 7.2 (NASA C-MAPSS RUL) or iterate on existing models.
