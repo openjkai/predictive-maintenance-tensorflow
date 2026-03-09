@@ -65,6 +65,10 @@ python scripts/train.py
 # 4. Demo: health score + recommendation
 python scripts/demo.py
 
+# 4b. Raw-signal model (1D-CNN or LSTM, optional)
+python scripts/train_raw.py --arch 1dcnn
+python scripts/demo_raw.py data/IR007_0.mat
+
 # 5. Explore in Jupyter
 jupyter notebook notebooks/exploration.ipynb
 ```
@@ -83,6 +87,10 @@ python scripts/demo.py data/IR007_0.mat
 # Or use run_predict for raw prediction output
 python scripts/run_predict.py
 python scripts/run_predict.py data/Normal_0.mat
+
+# Raw-signal model demo (after training with train_raw.py)
+python scripts/demo_raw.py
+python scripts/demo_raw.py data/IR007_0.mat
 ```
 
 Example output:
@@ -97,18 +105,19 @@ Recommendation: No maintenance required
 
 ## Results
 
-| Metric | Value |
-|--------|-------|
-| Val accuracy | ~98% |
-| Classes | normal, inner_race, ball, outer_race |
-| Features | RMS, peak, mean, std, kurtosis |
+| Model | Val accuracy | Input |
+|-------|--------------|-------|
+| Feature-based (Dense) | ~99–100% | 9 features: RMS, peak, mean, std, kurtosis, spectral centroid/bandwidth, wavelet energies |
+| Raw-signal (1D-CNN) | ~99.9% | 1024-sample windows |
+
+**Classes:** normal, inner_race, ball, outer_race
 
 ---
 
 ## Follow the plan
 
 1. Read [PLAN.md](PLAN.md) for the full roadmap.
-2. Phases 1–4 are complete; Phase 6 polish in progress.
+2. Phases 1–6 complete; raw-signal models (1D-CNN, LSTM) available.
 
 ### Dev setup (optional)
 
@@ -125,8 +134,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for commit convention and code style.
 
 ## Future Improvements
 
-- **LSTM / 1D CNN** — Use raw vibration windows instead of hand-crafted features
-- **More features** — FFT-based (spectral centroid, bandwidth), wavelet features
+- **More features** — Phase 7.1 done: spectral centroid, spectral bandwidth, wavelet energies (db4) — FFT-based (spectral centroid, bandwidth), wavelet features
 - **NASA C-MAPSS** — Add RUL (Remaining Useful Life) prediction
 - **Class weights** — Handle imbalanced fault severities
 - **Web dashboard** — Simple UI for health monitoring demo

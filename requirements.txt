@@ -8,3 +8,4 @@ matplotlib>=3.7
 jupyter>=1.0
 
 tensorflow>=2.14
+PyWavelets>=1.4

@@ -116,11 +116,23 @@
 - [x] Phase 3.1–3.4 — feature_engineering.py (RMS, peak, mean, std, kurtosis; build_dataset; train_val_split)
 - [x] Phase 3 complete
 - [x] Phase 4 — train_model.py, predict.py, scripts/train.py (Dense classifier, ~98% val accuracy)
-- [ ] Phase 5 (optional)
+- [x] Phase 5 — Multi-class (normal, inner_race, ball, outer_race)
 - [x] Phase 6.1–6.4 — README, train CLI args, demo.py (health score, recommendation), confusion matrix
+- [x] Raw-signal models — 1D-CNN, LSTM (train_raw.py, demo_raw.py)
+
+---
+
+## Phase 7: Future Improvements
+
+| # | Improvement | What We Do | Status |
+|---|-------------|------------|--------|
+| 7.1 | **More features** | FFT-based (spectral centroid, spectral bandwidth), wavelet features (db4) | Done |
+| 7.2 | **NASA C-MAPSS** | Add RUL (Remaining Useful Life) prediction | Pending |
+| 7.3 | **Class weights** | Handle imbalanced fault severities (loss weighting, oversampling) | Pending |
+| 7.4 | **Web dashboard** | Simple UI for health monitoring demo | Pending |
 
 ---
 
 ## Next Step
 
-**Phase 5 (optional):** Multi-class improvements. Project is GitHub-ready.
+Pick from Phase 7.2–7.4, or iterate on existing models.

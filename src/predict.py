@@ -40,7 +40,7 @@ def predict(
     Predict fault class for feature matrix X.
 
     Args:
-        X: (n_samples, 5) — rms, peak, mean, std, kurtosis
+        X: (n_samples, n_features) — time-domain + FFT + wavelet features
 
     Returns:
         pred_classes: (n_samples,) integer predictions
@@ -63,7 +63,8 @@ def predict_single(
     Predict for one sample. Convenience for demo/CLI.
 
     Args:
-        features: [rms, peak, mean, std, kurtosis]
+        features: [rms, peak, mean, std, kurtosis, spectral_centroid,
+                   spectral_bandwidth, wavelet_energy_d1, wavelet_energy_a1]
 
     Returns:
         dict with predicted_class, probability, class_names

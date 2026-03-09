@@ -1,6 +1,7 @@
 """
-Feature engineering for CWRU vibration data — Phase 3
+Feature engineering for CWRU vibration data — Phase 3 + Phase 7.1
 Extract time-domain features (RMS, peak, mean, std, kurtosis) per window.
+Phase 7.1: FFT-based (spectral centroid, bandwidth), wavelet features.
 """
 
 from pathlib import Path
@@ -8,6 +9,13 @@ from pathlib import Path
 import numpy as np
 
 from src.load_data import DATA_DIR, load_dataset
+
+# Phase 7.1: optional PyWavelets for wavelet features
+try:
+    import pywt
+    HAS_PYWAVELETS = True
+except ImportError:
+    HAS_PYWAVELETS = False
 
 # Windowing (from Phase 2 exploration)
 WINDOW_SAMPLES = 1024
@@ -32,13 +40,55 @@ def get_label(name: str) -> str:
     return "unknown"
 
 
+def _spectral_centroid_bandwidth(window: np.ndarray) -> tuple[float, float]:
+    """
+    Phase 7.1: FFT-based spectral centroid and bandwidth (normalized frequency).
+    Returns (centroid, bandwidth). Uses normalized freq 0..0.5 (Nyquist).
+    """
+    w = np.asarray(window, dtype=np.float64).ravel()
+    n = len(w)
+    if n < 2:
+        return 0.0, 0.0
+    fft_vals = np.fft.rfft(w)
+    mag = np.abs(fft_vals)
+    freqs = np.fft.rfftfreq(n)  # 0 to 0.5 (Nyquist)
+    total = mag.sum()
+    if total < 1e-12:
+        return 0.0, 0.0
+    centroid = np.sum(freqs * mag) / total
+    bandwidth = np.sqrt(np.sum(((freqs - centroid) ** 2) * mag) / total)
+    return float(centroid), float(bandwidth)
+
+
+def _wavelet_features(window: np.ndarray) -> tuple[float, float]:
+    """
+    Phase 7.1: Wavelet energy features using db4.
+    Returns (energy_d1, energy_a1): detail level 1 energy, approx level 1 energy.
+    """
+    if not HAS_PYWAVELETS:
+        return 0.0, 0.0
+    w = np.asarray(window, dtype=np.float64).ravel()
+    try:
+        coeffs = pywt.wavedec(w, "db4", level=2)  # [cA2, cD2, cD1]
+        # cD1 = first detail (high freq), cA2 = second approx (low freq)
+        cD1 = coeffs[2]
+        cA2 = coeffs[0]
+        energy_d1 = np.sum(cD1**2)
+        energy_a1 = np.sum(cA2**2)
+        return float(energy_d1), float(energy_a1)
+    except Exception:
+        return 0.0, 0.0
+
+
 def extract_features(window: np.ndarray) -> np.ndarray:
     """
-    Extract time-domain features from one window.
-    Phase 3.1: RMS, peak, mean. Phase 3.2: std, kurtosis.
+    Extract features from one window.
+    Phase 3: RMS, peak, mean, std, kurtosis (time-domain).
+    Phase 7.1: spectral centroid, spectral bandwidth (FFT), wavelet energies.
 
     Returns:
-        1D array: [rms, peak, mean, std, kurtosis]
+        1D array: [rms, peak, mean, std, kurtosis, spectral_centroid,
+                   spectral_bandwidth, wavelet_energy_d1, wavelet_energy_a1]
     """
     w = np.asarray(window, dtype=np.float64).ravel()
     rms = np.sqrt(np.mean(w**2))
@@ -50,7 +100,15 @@ def extract_features(window: np.ndarray) -> np.ndarray:
         kurtosis = np.mean(((w - mean) / std) ** 4) - 3.0
     else:
         kurtosis = 0.0
-    return np.array([rms, peak, mean, std, kurtosis], dtype=np.float64)
+
+    # Phase 7.1: FFT and wavelet
+    centroid, bandwidth = _spectral_centroid_bandwidth(w)
+    wav_d1, wav_a1 = _wavelet_features(w)
+
+    return np.array(
+        [rms, peak, mean, std, kurtosis, centroid, bandwidth, wav_d1, wav_a1],
+        dtype=np.float64,
+    )
 
 
 def sliding_windows(
@@ -86,7 +144,11 @@ def build_dataset(
         feature_names: list of feature column names
     """
     data = load_dataset(data_dir)
-    feature_names = ["rms", "peak", "mean", "std", "kurtosis"]
+    feature_names = [
+        "rms", "peak", "mean", "std", "kurtosis",
+        "spectral_centroid", "spectral_bandwidth",
+        "wavelet_energy_d1", "wavelet_energy_a1",
+    ]
 
     X_list = []
     y_list = []
