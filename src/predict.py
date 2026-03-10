@@ -192,6 +192,80 @@ def predict_from_file_raw(
     }
 
 
+# --- RUL (Phase 7.2) ---
+
+RUL_MODEL_PATH = MODELS_DIR / "rul_predictor.keras"
+
+
+def load_rul_model_and_meta(model_path: Path | str = RUL_MODEL_PATH):
+    """Load RUL model and scaler metadata."""
+    from tensorflow import keras
+
+    model_path = Path(model_path)
+    meta_path = model_path.with_suffix(".npz")
+
+    if not model_path.exists():
+        raise FileNotFoundError(
+            f"RUL model not found: {model_path}. Run: python scripts/train_rul.py"
+        )
+
+    model = keras.models.load_model(model_path)
+    meta = np.load(meta_path, allow_pickle=True)
+    scaler_min = meta["scaler_min"]
+    scaler_max = meta["scaler_max"]
+    window_size = int(meta["window_size"])
+    n_features = int(meta["n_features"])
+    used_cols = meta["used_cols"]
+
+    return model, scaler_min, scaler_max, window_size, n_features, used_cols
+
+
+def predict_rul(
+    X: np.ndarray,
+    model_path: Path | str = RUL_MODEL_PATH,
+) -> np.ndarray:
+    """
+    Predict RUL for sequence(s). X: (n, seq_len, n_features), normalized.
+    Returns RUL in cycles (may clip to 0).
+    """
+    model, scaler_min, scaler_max, _, _, _ = load_rul_model_and_meta(model_path)
+    # Scale: (X - min) / (max - min) * 2 - 1 -> [-1, 1]
+    scale = scaler_max - scaler_min
+    scale[scale < 1e-10] = 1.0
+    X_norm = (X - scaler_min) / scale * 2.0 - 1.0
+    pred = model.predict(X_norm.astype(np.float32), verbose=0).ravel()
+    return np.maximum(pred, 0)
+
+
+def predict_rul_from_test_engine(
+    engine_df: "pd.DataFrame",
+    model_path: Path | str = RUL_MODEL_PATH,
+) -> dict:
+    """
+    Predict RUL for one test engine. engine_df has columns [unit, cycle, op1..3, s1..s21].
+    Uses last window_size cycles.
+    """
+    import pandas as pd
+
+    model, scaler_min, scaler_max, window_size, n_features, used_cols = load_rul_model_and_meta(
+        model_path
+    )
+    used_cols = list(used_cols)
+
+    arr = engine_df.sort_values("cycle").iloc[:, used_cols].values.astype(np.float32)
+    if len(arr) < window_size:
+        raise ValueError(f"Engine has {len(arr)} cycles, need at least {window_size}")
+
+    window = arr[-window_size:]
+    scale = scaler_max - scaler_min
+    scale = np.where(scale < 1e-10, 1.0, scale)
+    window_norm = (window - scaler_min) / scale * 2.0 - 1.0
+    rul = float(model.predict(window_norm[np.newaxis, ...].astype(np.float32), verbose=0)[0, 0])
+    rul = max(0, rul)
+
+    return {"rul": rul, "unit": int(engine_df["unit"].iloc[0])}
+
+
 if __name__ == "__main__":
     import sys
 

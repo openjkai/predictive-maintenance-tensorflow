@@ -53,6 +53,7 @@ We use **machine learning** to train a computer program on real vibration data f
 | **Validation / val set** | Data we hold back during training to check how well the model generalizes (not used to update weights). |
 | **Accuracy** | Fraction of predictions that are correct (e.g. 98% = 98 out of 100 right). |
 | **Health score** | Our 0–100% measure: higher = healthier. 100% = confidently normal; 0% = confidently faulty. |
+| **RUL (Remaining Useful Life)** | Number of cycles until failure. Regression task (NASA C-MAPSS). |
 
 ### Vibration / signal terms
 
@@ -80,14 +81,17 @@ We use **machine learning** to train a computer program on real vibration data f
 
 ```
 ml/
-├── data/                    # Vibration .mat files (CWRU dataset)
-│   └── *.mat                # One file per bearing condition (Normal_0, IR007_0, etc.)
+├── data/                    # Datasets
+│   ├── *.mat                # CWRU bearing vibration (Normal_0, IR007_0, etc.)
+│   └── cmapss/              # NASA C-MAPSS FD001 (train_FD001.txt, test_FD001.txt, RUL_FD001.txt)
 │
 ├── models/                  # Saved trained models (create after training)
-│   ├── fault_classifier.keras      # Feature-based model
-│   ├── fault_classifier.npz        # Metadata (mean, std, class names) for feature model
-│   ├── fault_classifier_raw.keras  # Raw-signal (1D-CNN) model
-│   └── fault_classifier_raw.npz   # Metadata for raw model
+│   ├── fault_classifier.keras      # Feature-based bearing model
+│   ├── fault_classifier.npz        # Metadata for feature model
+│   ├── fault_classifier_raw.keras  # Raw-signal (1D-CNN) bearing model
+│   ├── fault_classifier_raw.npz   # Metadata for raw model
+│   ├── rul_predictor.keras        # RUL (Remaining Useful Life) LSTM
+│   └── rul_predictor.npz          # Metadata for RUL model
 │
 ├── notebooks/               # Jupyter notebooks for exploration
 │   ├── exploration.ipynb   # Data exploration, plots, FFT, windowing
@@ -97,8 +101,10 @@ ml/
 │   ├── load_data.py         # Load .mat files, return (signal, sample_rate, rpm)
 │   ├── feature_engineering.py  # Extract features (RMS, peak, FFT, wavelet), build datasets
 │   ├── train_model.py       # Feature-based Dense model training
-│   ├── raw_model.py         # 1D-CNN and LSTM for raw windows
-│   └── predict.py           # Load model, run inference (predict_from_file, predict_from_file_raw)
+│   ├── raw_model.py         # 1D-CNN and LSTM for raw bearing windows
+│   ├── load_cmapss.py       # NASA C-MAPSS FD001 loading, RUL labels, sequences
+│   ├── rul_model.py         # LSTM for RUL regression
+│   └── predict.py           # Inference: bearing fault + RUL
 │
 ├── scripts/                 # Run these from the command line
 │   ├── download_cwru.py     # Download CWRU .mat files into data/
@@ -109,7 +115,10 @@ ml/
 │   ├── demo_raw.py          # Demo with raw model (pass .mat path)
 │   ├── run_predict.py       # Run prediction from features or .mat file
 │   ├── run_features.py      # Run feature engineering, print dataset stats
-│   └── dashboard.py         # Streamlit web UI: upload .mat, get prediction
+│   ├── download_cmapss.py   # Download NASA C-MAPSS FD001
+│   ├── train_rul.py         # Train RUL predictor (LSTM)
+│   ├── demo_rul.py          # Demo RUL prediction on test engines
+│   └── dashboard.py         # Streamlit web UI: bearing fault + RUL
 │
 ├── requirements.txt        # Python dependencies
 ├── PLAN.md                 # Step-by-step implementation roadmap
@@ -117,11 +126,15 @@ ml/
 └── LICENSE                 # MIT
 ```
 
-### Data files (`.mat`)
+### Data files
 
+**CWRU (bearings):**
 - **Source**: [CWRU Bearing Data Center](https://engineering.case.edu/bearingdatacenter/welcome)
-- **Content**: Vibration recordings from a test rig. Each file = one bearing condition.
-- **Naming**: `Normal_0.mat` = healthy; `IR007_0.mat` = inner race fault 0.007"; `B007_0.mat` = ball fault; `OR007_0.mat` = outer race fault.
+- **Content**: Vibration recordings. `Normal_0.mat` = healthy; `IR007_0.mat` = inner race fault; etc.
+
+**NASA C-MAPSS (RUL):**
+- **Source**: [NASA Prognostics](https://ti.arc.nasa.gov/tech/dash/groups/pcoe/prognostic-data-repository/) / [GitHub mirror](https://github.com/edwardzjl/CMAPSSData)
+- **Content**: Turbofan engine sensor data (unit, cycle, 3 op settings, 21 sensors). Train = run-to-failure; test = ends before failure with true RUL.
 
 ---
 
@@ -194,7 +207,12 @@ python scripts/train_raw.py --arch 1dcnn
 # 5. (Optional) Demo with raw model
 python scripts/demo_raw.py data/IR007_0.mat
 
-# 6. Web dashboard
+# 6. RUL prediction (NASA C-MAPSS)
+python scripts/download_cmapss.py
+python scripts/train_rul.py
+python scripts/demo_rul.py
+
+# 7. Web dashboard
 streamlit run scripts/dashboard.py
 ```
 
@@ -209,6 +227,9 @@ streamlit run scripts/dashboard.py
 | `python scripts/demo.py` | Uses feature model on first sample in dataset | Prints predicted class, health score, recommendation |
 | `python scripts/run_predict.py` | Same, with optional `.mat` path | With path: `run_predict.py data/Normal_0.mat` |
 | `python scripts/demo_raw.py data/IR007_0.mat` | Uses raw model on a specific `.mat` file | Same output format |
+| `python scripts/download_cmapss.py` | Download NASA C-MAPSS FD001 | `data/cmapss/*.txt` |
+| `python scripts/train_rul.py` | Train RUL predictor (LSTM) | `models/rul_predictor.keras` |
+| `python scripts/demo_rul.py` | RUL demo on test engines | Predicted vs true RUL table |
 | `streamlit run scripts/dashboard.py` | Starts web app | Open http://localhost:8501 in browser |
 
 ### Training options
@@ -296,12 +317,14 @@ All class probabilities: {'normal': 0.001, 'inner_race': 0.995, 'ball': 0.002, '
 
 ## Results (typical performance)
 
-| Model | Validation accuracy | Input |
-|-------|---------------------|-------|
-| Feature-based (Dense) | ~99–100% | 9 features: RMS, peak, mean, std, kurtosis, spectral centroid/bandwidth, wavelet energies |
-| Raw-signal (1D-CNN) | ~99.9% | 1024-sample windows |
+| Model | Metric | Input |
+|-------|--------|-------|
+| Feature-based (Dense) | ~99–100% val accuracy | 9 features (RMS, peak, FFT, wavelet) |
+| Raw-signal (1D-CNN) | ~99.9% val accuracy | 1024-sample windows |
+| RUL predictor (LSTM) | Val RMSE ~15–25 cycles | NASA C-MAPSS FD001, 30-cycle windows |
 
-**Classes**: normal, inner_race, ball, outer_race
+**Bearing classes**: normal, inner_race, ball, outer_race  
+**RUL**: Remaining Useful Life in cycles (regression)
 
 ---
 
@@ -311,7 +334,7 @@ All class probabilities: {'normal': 0.001, 'inner_race': 0.995, 'ball': 0.002, '
 - **Phase 7.1**: Extra features (FFT, wavelet) — Done
 - **Phase 7.3**: Class weights for imbalanced data — Done
 - **Phase 7.4**: Web dashboard — Done
-- **Phase 7.2**: NASA C-MAPSS RUL — Pending
+- **Phase 7.2**: NASA C-MAPSS RUL — Done
 
 Full roadmap: **[PLAN.md](PLAN.md)**
 
@@ -327,9 +350,11 @@ python scripts/download_cwru.py
 python scripts/train.py
 python scripts/demo.py
 
-# Optional: raw model + web UI
+# Optional: raw model + RUL + web UI
 python scripts/train_raw.py --arch 1dcnn
 python scripts/demo_raw.py data/IR007_0.mat
+python scripts/download_cmapss.py && python scripts/train_rul.py
+python scripts/demo_rul.py
 streamlit run scripts/dashboard.py
 ```
 

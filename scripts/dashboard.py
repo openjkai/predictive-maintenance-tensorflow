@@ -36,12 +36,23 @@ def recommendation(health_score_val: float) -> str:
     return "Maintenance required — inspect immediately"
 
 
+RUL_MODEL_PATH = ROOT / "models" / "rul_predictor.keras"
+CMAPSS_DIR = ROOT / "data" / "cmapss"
+
+
 def main():
     st.set_page_config(page_title="Predictive Maintenance", page_icon="⚙️", layout="centered")
     st.title("⚙️ Predictive Maintenance")
-    st.caption("Bearing fault detection — CWRU dataset • TensorFlow")
+    st.caption("Bearing fault detection • RUL prediction • TensorFlow")
 
-    # Model choice
+    # Mode: Bearing (CWRU) or RUL (C-MAPSS)
+    mode = st.radio("Mode", ["Bearing fault (CWRU)", "RUL (NASA C-MAPSS)"], horizontal=True)
+
+    if mode == "RUL (NASA C-MAPSS)":
+        _run_rul_mode()
+        return
+
+    # --- Bearing fault mode ---
     use_raw = st.radio(
         "Model",
         ["Feature-based (9 features)", "Raw-signal (1D-CNN)"],
@@ -126,6 +137,55 @@ def main():
             st.progress(p, text=f"{cls}: {p:.1%}")
 
         st.caption(f"File: {label} • Windows: {result.get('n_windows', '—')}")
+
+
+def _run_rul_mode():
+    """RUL prediction on C-MAPSS FD001 test engines."""
+    if not RUL_MODEL_PATH.exists():
+        st.error(
+            "RUL model not found. Run first:\n"
+            "  python scripts/download_cmapss.py\n"
+            "  python scripts/train_rul.py"
+        )
+        return
+
+    from src.load_cmapss import load_fd001
+    from src.predict import load_rul_model_and_meta
+    import numpy as np
+
+    if not (CMAPSS_DIR / "test_FD001.txt").exists():
+        st.error("C-MAPSS data not found. Run: python scripts/download_cmapss.py")
+        return
+
+    n_engines = st.slider("Number of test engines to show", 5, 50, 10)
+    if st.button("Predict RUL", type="primary"):
+        with st.spinner("Loading model and data..."):
+            train_df, test_df, true_rul = load_fd001(CMAPSS_DIR, fd=1)
+            model, scaler_min, scaler_max, window_size, n_features, used_cols = (
+                load_rul_model_and_meta(RUL_MODEL_PATH)
+            )
+            used_cols = list(used_cols)
+
+        predictions = []
+        for i, unit in enumerate(test_df["unit"].unique()[:n_engines]):
+            unit_df = test_df[test_df["unit"] == unit].sort_values("cycle")
+            arr = unit_df.iloc[:, used_cols].values.astype(np.float32)
+            if len(arr) < window_size:
+                continue
+            window = arr[-window_size:]
+            scale = scaler_max - scaler_min
+            scale = np.where(scale < 1e-10, 1.0, scale)
+            window_norm = (window - scaler_min) / scale * 2.0 - 1.0
+            rul = float(
+                model.predict(window_norm[np.newaxis, ...].astype(np.float32), verbose=0)[0, 0]
+            )
+            rul = max(0, rul)
+            true = int(true_rul[i]) if i < len(true_rul) else "—"
+            predictions.append({"Engine": unit, "Predicted RUL": f"{rul:.1f}", "True RUL": true})
+
+        st.subheader("RUL predictions (cycles until failure)")
+        st.dataframe(predictions)
+        st.caption("RUL = Remaining Useful Life. Lower = closer to failure.")
 
 
 if __name__ == "__main__":
