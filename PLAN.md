@@ -133,6 +133,16 @@
 
 ---
 
+## Phase 8: Quality & Polish
+
+| # | Improvement | What We Do | Status |
+|---|-------------|------------|--------|
+| 8.1 | **Unit tests** | pytest for load_data, features, predict | Done |
+| 8.2 | **Model comparison** | Notebook comparing bearing + RUL models | Done |
+| 8.3 | **RUL FD002** | Support FD002 (multi op condition) | Pending |
+
+---
+
 ## Next Step
 
-All Phase 7 items done. Iterate on models or add new datasets.
+Phase 8.3 (RUL FD002) or iterate on existing models.

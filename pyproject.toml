@@ -16,6 +16,7 @@ dependencies = [
 dev = [
     "black>=24.0",
     "ruff>=0.1",
+    "pytest>=7.0",
     "pre-commit>=3.0",
     "commitizen>=3.0",
 ]
