@@ -12,6 +12,9 @@ venv/
 # Data (optional: ignore large files if needed)
 # *.mat
 
+# C-MAPSS data (download with scripts/download_cmapss.py)
+data/cmapss/*.txt
+
 # Trained models (train locally with scripts/train.py)
 models/*.keras
 models/*.npz

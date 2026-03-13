@@ -11,12 +11,13 @@ sys.path.insert(0, str(ROOT))
 from src.load_cmapss import CMAPSS_DIR, load_fd001, compute_train_rul, build_sequences  # noqa: E402
 
 
-def test_load_fd001():
-    """Load FD001 returns train, test, RUL."""
-    if not (CMAPSS_DIR / "train_FD001.txt").exists():
-        pytest.skip("C-MAPSS data not found. Run: python scripts/download_cmapss.py")
+@pytest.mark.parametrize("fd", [1, 2])
+def test_load_fd(fd):
+    """Load FD001/FD002 returns train, test, RUL."""
+    if not (CMAPSS_DIR / f"train_FD00{fd}.txt").exists():
+        pytest.skip(f"C-MAPSS FD00{fd} not found. Run: python scripts/download_cmapss.py")
 
-    train_df, test_df, true_rul = load_fd001(CMAPSS_DIR, fd=1)
+    train_df, test_df, true_rul = load_fd001(CMAPSS_DIR, fd=fd)
     assert len(train_df) > 0
     assert len(test_df) > 0
     assert len(true_rul) == test_df["unit"].nunique()

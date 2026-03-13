@@ -40,16 +40,23 @@ def download_from_nasa() -> bool:
         return False
 
 
-# GitHub raw files for FD001 (simplest dataset)
+# GitHub raw files — FD001 + FD002 (Phase 8.3)
 GITHUB_RAW = "https://raw.githubusercontent.com/edwardzjl/CMAPSSData/master"
-FD001_FILES = ["train_FD001.txt", "test_FD001.txt", "RUL_FD001.txt"]
+FD_FILES = [
+    "train_FD001.txt", "test_FD001.txt", "RUL_FD001.txt",
+    "train_FD002.txt", "test_FD002.txt", "RUL_FD002.txt",
+]
 
 
-def download_from_github() -> bool:
-    """Download FD001 from GitHub raw (reliable fallback)."""
+def download_from_github(fd: int | None = None) -> bool:
+    """Download FD001 (and FD002 if fd=2 or None) from GitHub raw."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    to_download = (
+        [f for f in FD_FILES if f"FD00{fd}" in f] if fd in (1, 2)
+        else FD_FILES
+    )
     ok = 0
-    for fname in FD001_FILES:
+    for fname in to_download:
         url = f"{GITHUB_RAW}/{fname}"
         out_path = DATA_DIR / fname
         try:
@@ -60,7 +67,7 @@ def download_from_github() -> bool:
             ok += 1
         except Exception as e:
             print(f"  Failed {fname}: {e}")
-    return ok == len(FD001_FILES)
+    return ok == len(to_download)
 
 
 def extract_nasa_zip() -> bool:
@@ -80,30 +87,35 @@ def extract_nasa_zip() -> bool:
 
 
 def main():
-    print("NASA C-MAPSS — RUL Dataset (FD001)\n")
+    import argparse
+    parser = argparse.ArgumentParser(description="Download NASA C-MAPSS data")
+    parser.add_argument("--fd", type=int, choices=[1, 2], default=None,
+                        help="Download only FD001 or FD002 (default: both)")
+    args = parser.parse_args()
+
+    print("NASA C-MAPSS — RUL Dataset\n")
     print(f"Target: {DATA_DIR}")
 
-    # Check if already present
-    train_fd001 = DATA_DIR / "train_FD001.txt"
-    if train_fd001.exists():
-        print("  FD001 already present. Skip download.")
-        print("  Run: python scripts/train_rul.py")
+    # Check what's needed
+    want_fd = (1, 2) if args.fd is None else (args.fd,)
+    needed = [fd for fd in want_fd if not (DATA_DIR / f"train_FD00{fd}.txt").exists()]
+    if not needed:
+        print("  Data already present. Skip download.")
+        print("  Run: python scripts/train_rul.py [--fd 1|2]")
         return
 
-    # Try GitHub first (reliable); NASA zip as optional
-    print("Downloading from GitHub...")
-    if download_from_github():
-        print("\nDone. Run: python scripts/train_rul.py")
+    print(f"  Downloading FD00{','.join(map(str, needed))}...")
+    success = download_from_github(needed[0] if len(needed) == 1 else None)
+    if success:
+        print("\nDone. Run: python scripts/train_rul.py [--fd 1|2]")
         return
 
-    print("\nTrying NASA...")
+    print("\nTrying NASA (full zip)...")
     if download_from_nasa() and extract_nasa_zip():
-        print("\nDone. Run: python scripts/train_rul.py")
+        print("\nDone. Run: python scripts/train_rul.py [--fd 1|2]")
         return
 
-    print("\nManual download:")
-    print("  1. Get files from https://github.com/edwardzjl/CMAPSSData")
-    print("  2. Place train_FD001.txt, test_FD001.txt, RUL_FD001.txt in:", DATA_DIR)
+    print("\nManual: get files from https://github.com/edwardzjl/CMAPSSData")
 
 
 if __name__ == "__main__":

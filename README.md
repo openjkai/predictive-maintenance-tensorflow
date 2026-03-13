@@ -235,8 +235,8 @@ streamlit run scripts/dashboard.py
 | `python scripts/run_predict.py` | Same, with optional `.mat` path | With path: `run_predict.py data/Normal_0.mat` |
 | `python scripts/demo_raw.py data/IR007_0.mat` | Uses raw model on a specific `.mat` file | Same output format |
 | `python scripts/download_cmapss.py` | Download NASA C-MAPSS FD001 | `data/cmapss/*.txt` |
-| `python scripts/train_rul.py` | Train RUL predictor (LSTM) | `models/rul_predictor.keras` |
-| `python scripts/demo_rul.py` | RUL demo on test engines | Predicted vs true RUL table |
+| `python scripts/train_rul.py [--fd 1\|2]` | Train RUL (FD001 or FD002) | `rul_predictor_fd00N.keras` |
+| `python scripts/demo_rul.py [--fd 2]` | RUL demo on test engines | Predicted vs true RUL table |
 | `streamlit run scripts/dashboard.py` | Starts web app | Open http://localhost:8501 in browser |
 | `python -m pytest tests/ -v` | Run unit tests (Phase 8.1) | 14 tests for load, features, predict, cmapss |
 
@@ -329,7 +329,7 @@ All class probabilities: {'normal': 0.001, 'inner_race': 0.995, 'ball': 0.002, '
 |-------|--------|-------|
 | Feature-based (Dense) | ~99–100% val accuracy | 9 features (RMS, peak, FFT, wavelet) |
 | Raw-signal (1D-CNN) | ~99.9% val accuracy | 1024-sample windows |
-| RUL predictor (LSTM) | Val RMSE ~15–25 cycles | NASA C-MAPSS FD001, 30-cycle windows |
+| RUL predictor (LSTM) | Val RMSE ~15–30 cycles | NASA C-MAPSS FD001/FD002, 30-cycle windows |
 
 **Bearing classes**: normal, inner_race, ball, outer_race  
 **RUL**: Remaining Useful Life in cycles (regression)
@@ -345,6 +345,7 @@ All class probabilities: {'normal': 0.001, 'inner_race': 0.995, 'ball': 0.002, '
 - **Phase 7.2**: NASA C-MAPSS RUL — Done
 - **Phase 8.1**: Unit tests (pytest) — Done
 - **Phase 8.2**: Model comparison notebook — Done
+- **Phase 8.3**: RUL FD002 (multi op condition) — Done
 
 Full roadmap: **[PLAN.md](PLAN.md)**
 
@@ -363,8 +364,10 @@ python scripts/demo.py
 # Optional: raw model + RUL + web UI
 python scripts/train_raw.py --arch 1dcnn
 python scripts/demo_raw.py data/IR007_0.mat
-python scripts/download_cmapss.py && python scripts/train_rul.py
-python scripts/demo_rul.py
+python scripts/download_cmapss.py
+python scripts/train_rul.py --fd 1
+python scripts/train_rul.py --fd 2   # FD002: 6 op conditions
+python scripts/demo_rul.py --fd 2
 streamlit run scripts/dashboard.py
 ```
 

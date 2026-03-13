@@ -7,10 +7,15 @@ from pathlib import Path
 
 import numpy as np
 
-from src.load_cmapss import CMAPSS_DIR, prepare_fd001
+from src.load_cmapss import CMAPSS_DIR, prepare_fd
 
 MODELS_DIR = Path(__file__).resolve().parents[1] / "models"
 DEFAULT_MODEL_PATH = MODELS_DIR / "rul_predictor.keras"
+
+
+def _model_path_for_fd(fd: int) -> Path:
+    """Model path for given FD. FD001: rul_predictor_fd001.keras (or legacy rul_predictor.keras)."""
+    return MODELS_DIR / f"rul_predictor_fd00{fd}.keras"
 
 
 def build_rul_lstm(
@@ -89,6 +94,7 @@ def _plot_curves(history: dict, out_path: Path) -> None:
 
 def train(
     data_dir: Path | str = CMAPSS_DIR,
+    fd: int = 1,
     window_size: int = 30,
     max_rul: int = 125,
     lstm_units: int = 64,
@@ -96,18 +102,22 @@ def train(
     batch_size: int = 64,
     val_frac: float = 0.2,
     random_state: int = 42,
-    model_path: Path | str = DEFAULT_MODEL_PATH,
+    model_path: Path | str | None = None,
 ) -> dict:
     """
-    Train RUL predictor on FD001.
+    Train RUL predictor on FD001 or FD002 (Phase 8.3).
 
     Returns:
         dict with val_rmse, val_mae, test_rmse, test_score, history, etc.
     """
     from tensorflow import keras
 
-    data = prepare_fd001(
+    if model_path is None:
+        model_path = _model_path_for_fd(fd)
+
+    data = prepare_fd(
         data_dir=data_dir,
+        fd=fd,
         window_size=window_size,
         max_rul=max_rul,
         val_frac=val_frac,
@@ -169,7 +179,7 @@ def train(
     model.save(model_path)
 
     # Save metadata for prediction (min-max scale to [-1,1])
-    meta_path = model_path.with_suffix(".npz")
+    meta_path = Path(model_path).with_suffix(".npz")
     np.savez(
         meta_path,
         scaler_min=scaler.data_min_.astype(np.float32),
@@ -178,12 +188,14 @@ def train(
         n_features=n_features,
         used_cols=np.array(data["used_cols"]),
         max_rul=max_rul,
+        fd=fd,
     )
 
     # Training curves
     figs_dir = Path(__file__).resolve().parents[1] / "notebooks"
     figs_dir.mkdir(parents=True, exist_ok=True)
-    _plot_curves(history.history, figs_dir / "training_curves_rul.png")
+    curve_name = f"training_curves_rul_fd00{fd}.png"
+    _plot_curves(history.history, figs_dir / curve_name)
 
     return {
         "history": history.history,

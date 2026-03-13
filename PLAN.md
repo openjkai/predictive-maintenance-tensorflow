@@ -139,10 +139,10 @@
 |---|-------------|------------|--------|
 | 8.1 | **Unit tests** | pytest for load_data, features, predict | Done |
 | 8.2 | **Model comparison** | Notebook comparing bearing + RUL models | Done |
-| 8.3 | **RUL FD002** | Support FD002 (multi op condition) | Pending |
+| 8.3 | **RUL FD002** | Support FD002 (6 op conditions), train --fd 1|2 | Done |
 
 ---
 
 ## Next Step
 
-Phase 8.3 (RUL FD002) or iterate on existing models.
+All Phase 8 done. Iterate on models or add new features.

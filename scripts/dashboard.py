@@ -36,8 +36,16 @@ def recommendation(health_score_val: float) -> str:
     return "Maintenance required — inspect immediately"
 
 
-RUL_MODEL_PATH = ROOT / "models" / "rul_predictor.keras"
 CMAPSS_DIR = ROOT / "data" / "cmapss"
+
+
+def _rul_model_path(fd: int) -> Path:
+    p = ROOT / "models" / f"rul_predictor_fd00{fd}.keras"
+    if fd == 1 and not p.exists():
+        legacy = ROOT / "models" / "rul_predictor.keras"
+        if legacy.exists():
+            return legacy
+    return p
 
 
 def main():
@@ -140,29 +148,33 @@ def main():
 
 
 def _run_rul_mode():
-    """RUL prediction on C-MAPSS FD001 test engines."""
-    if not RUL_MODEL_PATH.exists():
-        st.error(
-            "RUL model not found. Run first:\n"
-            "  python scripts/download_cmapss.py\n"
-            "  python scripts/train_rul.py"
-        )
-        return
-
+    """RUL prediction on C-MAPSS FD001 or FD002 test engines."""
     from src.load_cmapss import load_fd001
     from src.predict import load_rul_model_and_meta
     import numpy as np
 
-    if not (CMAPSS_DIR / "test_FD001.txt").exists():
+    fd = st.radio("Dataset", [1, 2], format_func=lambda x: f"FD00{x} (1 op)" if x == 1 else "FD002 (6 op)")
+    model_path = _rul_model_path(fd)
+
+    if not model_path.exists():
+        st.error(
+            f"RUL model for FD00{fd} not found. Run:\n"
+            "  python scripts/download_cmapss.py\n"
+            f"  python scripts/train_rul.py --fd {fd}"
+        )
+        return
+
+    test_file = CMAPSS_DIR / f"test_FD00{fd}.txt"
+    if not test_file.exists():
         st.error("C-MAPSS data not found. Run: python scripts/download_cmapss.py")
         return
 
     n_engines = st.slider("Number of test engines to show", 5, 50, 10)
     if st.button("Predict RUL", type="primary"):
         with st.spinner("Loading model and data..."):
-            train_df, test_df, true_rul = load_fd001(CMAPSS_DIR, fd=1)
+            train_df, test_df, true_rul = load_fd001(CMAPSS_DIR, fd=fd)
             model, scaler_min, scaler_max, window_size, n_features, used_cols = (
-                load_rul_model_and_meta(RUL_MODEL_PATH)
+                load_rul_model_and_meta(model_path)
             )
             used_cols = list(used_cols)
 

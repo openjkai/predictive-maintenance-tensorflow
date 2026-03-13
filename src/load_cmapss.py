@@ -119,20 +119,22 @@ def build_sequences(
     return np.array(X_list), np.array(y_list, dtype=np.float32), np.array(unit_list)
 
 
-def prepare_fd001(
+def prepare_fd(
     data_dir: Path | str = CMAPSS_DIR,
+    fd: int = 1,
     window_size: int = 30,
     max_rul: int = MAX_RUL,
     val_frac: float = 0.2,
     random_state: int = 42,
 ) -> dict:
     """
-    Full pipeline: load FD001, build sequences, split train/val, scale.
+    Full pipeline: load FD001/FD002, build sequences, split train/val, scale.
+    Phase 8.3: fd=2 for multi operating condition (6 conditions).
 
     Returns:
-        dict with X_train, X_val, y_train, y_val, scaler, test_X, test_y_true, etc.
+        dict with X_train, X_val, y_train, y_val, scaler, test_X, test_y_true, fd, etc.
     """
-    train_df, test_df, true_rul = load_fd001(data_dir, fd=1)
+    train_df, test_df, true_rul = load_fd001(data_dir, fd=fd)
     train_df, train_y = compute_train_rul(train_df, max_rul=max_rul)
 
     # Drop constant sensors (zero variance)
@@ -194,4 +196,5 @@ def prepare_fd001(
         "window_size": window_size,
         "n_features": len(used_cols),
         "used_cols": used_cols,
+        "fd": fd,
     }
