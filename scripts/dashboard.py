@@ -41,10 +41,8 @@ CMAPSS_DIR = ROOT / "data" / "cmapss"
 
 def _rul_model_path(fd: int) -> Path:
     p = ROOT / "models" / f"rul_predictor_fd00{fd}.keras"
-    if fd == 1 and not p.exists():
-        legacy = ROOT / "models" / "rul_predictor.keras"
-        if legacy.exists():
-            return legacy
+    if fd == 1 and not p.exists() and (ROOT / "models" / "rul_predictor.keras").exists():
+        return ROOT / "models" / "rul_predictor.keras"
     return p
 
 
@@ -153,7 +151,9 @@ def _run_rul_mode():
     from src.predict import load_rul_model_and_meta
     import numpy as np
 
-    fd = st.radio("Dataset", [1, 2], format_func=lambda x: f"FD00{x} (1 op)" if x == 1 else "FD002 (6 op)")
+    fd = st.selectbox("Dataset", [1, 2, 3, 4], format_func=lambda x: {
+        1: "FD001 (1 op)", 2: "FD002 (6 op)", 3: "FD003 (1 op, 2 fault)", 4: "FD004 (6 op, 2 fault)"
+    }.get(x, f"FD00{x}"))
     model_path = _rul_model_path(fd)
 
     if not model_path.exists():

@@ -40,19 +40,21 @@ def download_from_nasa() -> bool:
         return False
 
 
-# GitHub raw files — FD001 + FD002 (Phase 8.3)
+# GitHub raw files — FD001–FD004 (Phase 9.2)
 GITHUB_RAW = "https://raw.githubusercontent.com/edwardzjl/CMAPSSData/master"
 FD_FILES = [
     "train_FD001.txt", "test_FD001.txt", "RUL_FD001.txt",
     "train_FD002.txt", "test_FD002.txt", "RUL_FD002.txt",
+    "train_FD003.txt", "test_FD003.txt", "RUL_FD003.txt",
+    "train_FD004.txt", "test_FD004.txt", "RUL_FD004.txt",
 ]
 
 
 def download_from_github(fd: int | None = None) -> bool:
-    """Download FD001 (and FD002 if fd=2 or None) from GitHub raw."""
+    """Download FD001–FD004 from GitHub raw."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     to_download = (
-        [f for f in FD_FILES if f"FD00{fd}" in f] if fd in (1, 2)
+        [f for f in FD_FILES if f"FD00{fd}" in f] if fd in (1, 2, 3, 4)
         else FD_FILES
     )
     ok = 0
@@ -89,15 +91,15 @@ def extract_nasa_zip() -> bool:
 def main():
     import argparse
     parser = argparse.ArgumentParser(description="Download NASA C-MAPSS data")
-    parser.add_argument("--fd", type=int, choices=[1, 2], default=None,
-                        help="Download only FD001 or FD002 (default: both)")
+    parser.add_argument("--fd", type=int, choices=[1, 2, 3, 4], default=None,
+                        help="Download only FD001/002/003/004 (default: all)")
     args = parser.parse_args()
 
     print("NASA C-MAPSS — RUL Dataset\n")
     print(f"Target: {DATA_DIR}")
 
     # Check what's needed
-    want_fd = (1, 2) if args.fd is None else (args.fd,)
+    want_fd = (1, 2, 3, 4) if args.fd is None else (args.fd,)
     needed = [fd for fd in want_fd if not (DATA_DIR / f"train_FD00{fd}.txt").exists()]
     if not needed:
         print("  Data already present. Skip download.")

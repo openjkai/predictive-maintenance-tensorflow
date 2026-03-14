@@ -14,7 +14,7 @@ DEFAULT_MODEL_PATH = MODELS_DIR / "rul_predictor.keras"
 
 
 def _model_path_for_fd(fd: int) -> Path:
-    """Model path for given FD. FD001: rul_predictor_fd001.keras (or legacy rul_predictor.keras)."""
+    """Model path for given FD (1–4)."""
     return MODELS_DIR / f"rul_predictor_fd00{fd}.keras"
 
 

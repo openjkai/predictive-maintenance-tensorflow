@@ -20,7 +20,7 @@ import numpy as np
 
 def main():
     parser = argparse.ArgumentParser(description="RUL demo on FD001 or FD002")
-    parser.add_argument("--fd", type=int, choices=[1, 2], default=1)
+    parser.add_argument("--fd", type=int, choices=[1, 2, 3, 4], default=1)
     parser.add_argument("-n", "--engines", type=int, default=5, help="Number of test engines to show")
     args = parser.parse_args()
 

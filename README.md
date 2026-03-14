@@ -122,7 +122,8 @@ ml/
 │   ├── demo_raw.py          # Demo with raw model (pass .mat path)
 │   ├── run_predict.py       # Run prediction from features or .mat file
 │   ├── run_features.py      # Run feature engineering, print dataset stats
-│   ├── download_cmapss.py   # Download NASA C-MAPSS FD001
+│   ├── download_cmapss.py   # Download NASA C-MAPSS FD001–004
+│   ├── run_all.py           # Full pipeline: download → train → demo (Phase 9.1)
 │   ├── train_rul.py         # Train RUL predictor (LSTM)
 │   ├── demo_rul.py          # Demo RUL prediction on test engines
 │   └── dashboard.py         # Streamlit web UI: bearing fault + RUL
@@ -238,7 +239,8 @@ streamlit run scripts/dashboard.py
 | `python scripts/train_rul.py [--fd 1\|2]` | Train RUL (FD001 or FD002) | `rul_predictor_fd00N.keras` |
 | `python scripts/demo_rul.py [--fd 2]` | RUL demo on test engines | Predicted vs true RUL table |
 | `streamlit run scripts/dashboard.py` | Starts web app | Open http://localhost:8501 in browser |
-| `python -m pytest tests/ -v` | Run unit tests (Phase 8.1) | 14 tests for load, features, predict, cmapss |
+| `python -m pytest tests/ -v` | Run unit tests (Phase 8.1) | 14+ tests for load, features, predict, cmapss |
+| `python scripts/run_all.py` | Full pipeline (download, train, demo) | Use `--quick` for fast run, `--skip-rul` etc. |
 
 ### Training options
 
@@ -346,6 +348,8 @@ All class probabilities: {'normal': 0.001, 'inner_race': 0.995, 'ball': 0.002, '
 - **Phase 8.1**: Unit tests (pytest) — Done
 - **Phase 8.2**: Model comparison notebook — Done
 - **Phase 8.3**: RUL FD002 (multi op condition) — Done
+- **Phase 9.1**: run_all.py (full pipeline) — Done
+- **Phase 9.2**: RUL FD003/FD004 — Done
 
 Full roadmap: **[PLAN.md](PLAN.md)**
 
@@ -357,16 +361,17 @@ Full roadmap: **[PLAN.md](PLAN.md)**
 cd /path/to/ml
 source venv/bin/activate   # or venv\Scripts\activate on Windows
 
+# Option A: Full pipeline (one command)
+python scripts/run_all.py
+python scripts/run_all.py --quick          # Fewer epochs
+python scripts/run_all.py --skip-rul       # Bearing only
+
+# Option B: Step by step
 python scripts/download_cwru.py
 python scripts/train.py
 python scripts/demo.py
-
-# Optional: raw model + RUL + web UI
-python scripts/train_raw.py --arch 1dcnn
-python scripts/demo_raw.py data/IR007_0.mat
 python scripts/download_cmapss.py
 python scripts/train_rul.py --fd 1
-python scripts/train_rul.py --fd 2   # FD002: 6 op conditions
 python scripts/demo_rul.py --fd 2
 streamlit run scripts/dashboard.py
 ```

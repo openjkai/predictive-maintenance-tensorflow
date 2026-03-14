@@ -143,6 +143,15 @@
 
 ---
 
+## Phase 9: Convenience & Extensions
+
+| # | Improvement | What We Do | Status |
+|---|-------------|------------|--------|
+| 9.1 | **Run-all script** | One command: download → train → demo | Done |
+| 9.2 | **RUL FD003/FD004** | Support all 4 C-MAPSS datasets | Done |
+
+---
+
 ## Next Step
 
-All Phase 8 done. Iterate on models or add new features.
+Iterate on models or add new features (CI, Docker, etc.).

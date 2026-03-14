@@ -19,8 +19,8 @@ DEFAULT_MODEL = ROOT / "models" / "rul_predictor.keras"
 
 def main():
     parser = argparse.ArgumentParser(description="Train RUL predictor on NASA C-MAPSS FD001/FD002")
-    parser.add_argument("--fd", type=int, choices=[1, 2], default=1,
-                        help="FD001 (1 op cond) or FD002 (6 op cond)")
+    parser.add_argument("--fd", type=int, choices=[1, 2, 3, 4], default=1,
+                        help="FD001/002/003/004 (1=1op, 2=6op, 3=1op+2fault, 4=6op+2fault)")
     parser.add_argument("--data-dir", type=Path, default=CMAPSS_DIR, help="C-MAPSS data directory")
     parser.add_argument("--window-size", type=int, default=30, help="Sequence length (cycles)")
     parser.add_argument("--max-rul", type=int, default=125, help="RUL cap (piecewise linear)")

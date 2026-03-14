@@ -11,7 +11,7 @@ sys.path.insert(0, str(ROOT))
 from src.load_cmapss import CMAPSS_DIR, load_fd001, compute_train_rul, build_sequences  # noqa: E402
 
 
-@pytest.mark.parametrize("fd", [1, 2])
+@pytest.mark.parametrize("fd", [1, 2, 3, 4])
 def test_load_fd(fd):
     """Load FD001/FD002 returns train, test, RUL."""
     if not (CMAPSS_DIR / f"train_FD00{fd}.txt").exists():
