@@ -154,4 +154,5 @@
 
 ## Next Step
 
-Iterate on models or add new features (CI, Docker, etc.).
+Iterate on models or add new features (e.g. CI, Docker, model export).
+All planned phases complete. See [CHANGELOG.md](CHANGELOG.md) for summary.

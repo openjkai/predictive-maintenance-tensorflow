@@ -9,6 +9,9 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
+# Test
+.pytest_cache/
+
 # Data (optional: ignore large files if needed)
 # *.mat
 

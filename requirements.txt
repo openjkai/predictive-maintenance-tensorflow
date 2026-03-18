@@ -1,4 +1,4 @@
-# Predictive Maintenance ML — Phase 1+ dependencies
+# Predictive Maintenance ML — dependencies
 # Install: pip install -r requirements.txt
 
 numpy>=1.24
@@ -11,3 +11,6 @@ tensorflow>=2.14
 scikit-learn>=1.3
 PyWavelets>=1.4
 streamlit>=1.28
+
+# Dev (optional): pytest, black, ruff — or pip install -e ".[dev]"
+pytest>=7.0

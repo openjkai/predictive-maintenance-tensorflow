@@ -1,6 +1,6 @@
 # Predictive Maintenance — TensorFlow
 
-A **machine learning (ML) project** that learns to detect **bearing faults** from vibration data. You give it a vibration signal (from a motor, pump, or fan), and it tells you: *Is the bearing healthy, or does it have a fault? If faulty, what kind?* This helps plan maintenance **before** machines break down.
+A **machine learning (ML) project** for predictive maintenance: **(1) Bearing fault detection** from CWRU vibration data — classify as normal, inner race, ball, or outer race fault; **(2) RUL (Remaining Useful Life)** from NASA C-MAPSS — predict cycles until turbofan engine failure. Both include training, demo, and a web dashboard.
 
 ---
 
@@ -26,13 +26,14 @@ Machines with rotating parts (motors, pumps, fans) use **bearings**. When a bear
 ### The solution
 We use **machine learning** to train a computer program on real vibration data from healthy and faulty bearings. Once trained, the program can:
 
-1. **Classify** vibration as: *normal*, *inner race fault*, *ball fault*, or *outer race fault*
+1. **Classify** bearing vibration as: *normal*, *inner race fault*, *ball fault*, or *outer race fault*
 2. **Give a health score** (0–100%)
 3. **Recommend** what to do: no action, monitor, or inspect immediately
+4. **Predict RUL** for turbofan engines (NASA C-MAPSS)
 
 ### What makes this project good for learning
-- Uses **real data** from Case Western Reserve University (CWRU) — industry-standard benchmark
-- **Two approaches** shown: hand-crafted features vs. raw signal (neural networks)
+- **Two datasets**: CWRU (bearings) and NASA C-MAPSS (turbofan RUL)
+- **Two approaches** for bearings: hand-crafted features vs. raw signal (neural networks)
 - **End-to-end pipeline**: download → load → features → train → predict → demo
 - Step-by-step plan in **[PLAN.md](PLAN.md)**
 
@@ -130,6 +131,7 @@ ml/
 │
 ├── requirements.txt        # Python dependencies
 ├── PLAN.md                 # Step-by-step implementation roadmap
+├── CHANGELOG.md            # Version history
 ├── README.md               # This file
 └── LICENSE                 # MIT
 ```
